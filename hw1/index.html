@@ -31,8 +31,9 @@
 <div>
 
 <h2 align="middle">Overview</h2>
-<p>This homework explored various methods for rasterization. I learned how to implement antialiasing methods, including supersampling, pixel sampling, and level sampling.
-  I enjoyed experimenting with transforms, linear interpolation with barycentric coordinates, and texture mapping to produce interesting images.
+<p>
+  This homework explored various methods for rasterization. I learned how to implement antialiasing methods, including supersampling, pixel sampling, and level sampling (mipmapping).
+  I enjoyed experimenting with svg transforms, linear interpolation using barycentric coordinates, and texture mapping to produce interesting images.
 </p>
 
 <h2 align="middle">Section I: Rasterization</h2>
@@ -120,7 +121,7 @@
 <h3 align="middle">Part 4: Barycentric coordinates</h3>
 
 <p>
-  Barycentric coordinates are a system of coordinates used to represent points in relation to a simplex. 
+  Barycentric coordinates are a system of coordinates used to represent points in relation to a simplex.
   In 2d space, the polygon is a triangle; in 3d space, it is a tetrahedron; and so on for higher dimensions.
   A point is defined as the center of mass/barycenter of its coordinates, where the masses are placed at the simplex's vertices.
   A point is inside the simplex if and only if all coordinates are positive (inside or on the boundary if and only if all coordinates are nonnegative).
@@ -198,8 +199,9 @@
   Bilinear level sampling computes the mipmap level as the average of the two adjacent levels with floors and ceilings.
   The appropriate mipmap level was calculated using barycentric coordinates and derivatives, scaled by the texture image's dimensions.
   <br><br>
-  In the images below, it seems that level sampling has a larger effect than pixel sampling, but requires more memory to store the mipmaps.
-  Both improvements are much clearer with no supersampling. Supersampling also requires temporary storage for the rendered supersamples.
+  In the images below, it seems that level sampling (rows) has a larger antialiasing effect compared to pixel sampling (columns) when texture mapping, but requires more memory to store the precomputed mipmaps.
+  Mipmapping also tends to render faster, especially with hardware acceleration support. Both improvements are much clearer with no supersampling. Supersampling has high antialiasing power,
+  but requires significant temporary storage for the rendered high-resolution image, typically involving a higher memory overhead and slower rendering than both texture sampling methods.
 </p>
 
 <div align="middle">
