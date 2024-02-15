@@ -1,7 +1,248 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Homework 1 index.html here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184/284A Rasterizer</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+<body>
+
+<h1 align="middle">CS 184/284A: Computer Graphics and Imaging, Spring 2024</h1>
+<h1 align="middle">Homework 1: Rasterizer</h1>
+<h2 align="middle">Elaine Qian</h2>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>This homework explored various methods for rasterization. I learned how to implement antialiasing methods, including supersampling, pixel sampling, and level sampling.
+  I enjoyed experimenting with transforms, linear interpolation with barycentric coordinates, and texture mapping to produce interesting images.
+</p>
+
+<h2 align="middle">Section I: Rasterization</h2>
+
+<h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
+
+<p>
+  The basic triangle rasterization algorithm takes in three (x,y) vertices and rasterizes the triangle within the points.
+  First, we ensure that the points are oriented clockwise by comparing the slopes of the line segments, swapping two points if counterclockwise.
+  We then compute the bounding box of the vertices by finding the minimum and maximum x and y values.
+  For each pixel within the bounding box, we check if the sample (center of pixel) is inside the triangle, and fill the pixel if so.
+  The point-in-triangle check is three line tests that take dot products with each edge normal, which does not increase the time complexity.
+</p>
+
+<div align="middle">
+  <img src="images/task1.png" align="middle" width="400px"/>
+  <!-- <figcaption align="middle">Supersample rate: 1 per pixel</figcaption> -->
+</div>
+
+<h3 align="middle">Part 2: Antialiasing triangles</h3>
+
+<p>
+  The supersampling algorithm is similar to the basic rasterization algorithm, except each pixel is filled by the average color of its evenly-divided supersamples.
+  We essentially first rasterize a high-resolution image into the sample buffer, where each supersample is a pixel, which requires temporary additional memory.
+  We then downsample the image into the correct dimensions, populating the framebuffer by averaging the supersampled values corresponding to each original pixel.
+  <br><br>
+  Supersampling is useful for simple antialiasing. Because each pixel is now rasterized with the average color, edges and vertices are rendered much smoother.
+  In the below images, the pixel inspector is focused on the red triangle's right vertex. In the basic algorithm, there is a gap between the rightmost pixels and the rest of the triangle.
+  This is because the samples in the gap that were chosen happened to fall outside the triangle, but the triangle does cross through those pixels.
+  Supersampling fixes the gap with antialiasing, as a light red is rasterized instead of pure white. The sharp edges are overall blurred and smoothed.
+</p>
+
+<!-- <p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p> -->
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/task2a.png" align="middle" width="400px"/>
+        <figcaption align="middle">Supersample rate: 1 per pixel</figcaption>
+      </td>
+      <td>
+        <img src="images/task2b.png" align="middle" width="400px"/>
+        <figcaption align="middle">Supersample rate: 4 per pixel</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr>
+      <td>
+        <img src="images/task2c.png" align="middle" width="400px"/>
+        <figcaption align="middle">Supersample rate: 9 per pixel</figcaption>
+      </td>
+      <td>
+        <img src="images/task2d.png" align="middle" width="400px"/>
+        <figcaption align="middle">Supersample rate: 16 per pixel</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h3 align="middle">Part 3: Transforms</h3>
+
+<p>
+  Cubeman is now a ballet dancer! This is cubeman's attempt at an arabesque pose (he's trying his best).
+  This involved lengthening the robot's legs, turning it pink, and editing the rotations and translations.
+</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/task3.png" align="middle" width="400px"/>
+        <!-- <figcaption align="middle">Robot ballerina!</figcaption> -->
+      </td>
+      <td>
+        <img src="images/arabesque.jpg" align="middle" width="235px"/>
+        <!-- <figcaption align="middle">Actual ballerina</figcaption> -->
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h2 align="middle">Section II: Sampling</h2>
+
+<h3 align="middle">Part 4: Barycentric coordinates</h3>
+
+<p>
+  Barycentric coordinates are a system of coordinates used to represent points in relation to a simplex. 
+  In 2d space, the polygon is a triangle; in 3d space, it is a tetrahedron; and so on for higher dimensions.
+  A point is defined as the center of mass/barycenter of its coordinates, where the masses are placed at the simplex's vertices.
+  A point is inside the simplex if and only if all coordinates are positive (inside or on the boundary if and only if all coordinates are nonnegative).
+  Note that barycentric coordinates are unique if normalized, or defined up to multiplication by a nonzero constant.
+</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/task4a.png" align="middle" width="400px"/>
+        <figcaption align="middle">Interpolated triangle</figcaption>
+      </td>
+      <td>
+        <img src="images/task4b.png" align="middle" width="400px"/>
+        <figcaption align="middle">Color wheel</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
+
+<p>
+  Pixel sampling refers to the process of applying a texture map when rendering an image.
+  Textures can be used to add detail, surface characteristics, color variation, and other aspects.
+  For each pixel in the screen space, we determine the corresponding texel in the texture map.
+  Note that we first scale the x coordinate by the width of the mipmap and the y coordinate by the height.
+  <br><br>
+  For nearest neighbor sampling, we simply return the closest texel by rounding the resulting coordinates.
+  For bilinear sampling, we use floors and ceilings to interpolate between the four surrounding texels.
+  We perform three linear interpolations: horizontally across the top left and top right,
+  horizontally across the bottom left and bottom right, and vertically across the results.
+  <br><br>
+  In the images below, we see that bilinear sampling outperforms nearest neighbor sampling.
+  Bilienar sampling looks much smoother and blended because it uses linear interpolation in two directions.
+  This is especially evident with no supersampling (top row), as each pixel is directly rasterized based on the closest texel to the 1 sample.
+  When the supersampling rate is higher (bottom row), there is already some antialiasing functionality, so the difference is less apparent.
+</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/task5a.png" align="middle" width="400px"/>
+        <figcaption align="middle">Nearest sampling: 1 per pixel</figcaption>
+      </td>
+      <td>
+        <img src="images/task5b.png" align="middle" width="400px"/>
+        <figcaption align="middle">Bilinear sampling: 1 per pixel</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr>
+      <td>
+        <img src="images/task5c.png" align="middle" width="400px"/>
+        <figcaption align="middle">Nearest sampling: 16 per pixel</figcaption>
+      </td>
+      <td>
+        <img src="images/task5d.png" align="middle" width="400px"/>
+        <figcaption align="middle">Bilinear sampling: 16 per pixel</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
+
+<p>
+  Mipmapping involves creating a series of pre-filtered and pre-scaled versions of a texture at different levels of detail.
+  The mipmaps are stored in memory alongside the original texture and selected to match the required detail in the rasterized image.
+  Larger objects and objects closer to the camera need higher-resolution textures, whereas smaller or farther objects use lower-resolution textures.
+  <br><br>
+  The zeroth level is just the full-resolution image. Nearest level sampling computes the closest mipmap level with rounding.
+  Bilinear level sampling computes the mipmap level as the average of the two adjacent levels with floors and ceilings.
+  The appropriate mipmap level was calculated using barycentric coordinates and derivatives, scaled by the texture image's dimensions.
+  <br><br>
+  In the images below, it seems that level sampling has a larger effect than pixel sampling, but requires more memory to store the mipmaps.
+  Both improvements are much clearer with no supersampling. Supersampling also requires temporary storage for the rendered supersamples.
+</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/task6a.png" align="middle" width="400px"/>
+        <figcaption align="middle">Zeroth level & Nearest sampling</figcaption>
+      </td>
+      <td>
+        <img src="images/task6b.png" align="middle" width="400px"/>
+        <figcaption align="middle">Zeroth level & Bilinear sampling</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr>
+      <td>
+        <img src="images/task6c.png" align="middle" width="400px"/>
+        <figcaption align="middle">Nearest level & Nearest sampling</figcaption>
+      </td>
+      <td>
+        <img src="images/task6d.png" align="middle" width="400px"/>
+        <figcaption align="middle">Nearest level & Bilinear sampling</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr>
+      <td>
+        <img src="images/task6c.png" align="middle" width="400px"/>
+        <figcaption align="middle">Bilinear level & Nearest sampling</figcaption>
+      </td>
+      <td>
+        <img src="images/task6d.png" align="middle" width="400px"/>
+        <figcaption align="middle">Bilinear level & Bilinear sampling</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<!-- <h2 align="middle">Section III: Art Competition</h2>
+<p>If you are not participating in the optional art competition, don't worry about this section!</p>
+
+<h3 align="middle">Part 7: Draw something interesting!</h3> -->
+
+</body>
 </html>
