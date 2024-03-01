@@ -23,7 +23,7 @@
 <body>
 
 <h1 align="middle">CS 184/284A: Computer Graphics and Imaging, Spring 2024</h1>
-<h1 align="middle">Homework 1: Rasterizer</h1>
+<h1 align="middle">Project 1: Rasterizer</h1>
 <h2 align="middle">Elaine Qian</h2>
 
 <br><br>
@@ -32,7 +32,7 @@
 
 <h2 align="middle">Overview</h2>
 <p>
-  This homework explored various methods for rasterization. I learned how to implement antialiasing methods, including supersampling, pixel sampling, and level sampling (mipmapping).
+  This project explored various methods for rasterization. I learned how to implement antialiasing methods, including supersampling, pixel sampling, and level sampling (mipmapping).
   I enjoyed experimenting with svg transforms, linear interpolation using barycentric coordinates, and texture mapping to produce interesting images.
 </p>
 
@@ -49,7 +49,7 @@
 </p>
 
 <div align="middle">
-  <img src="images/task1.png" align="middle" width="400px"/>
+  <img src="images/task1.png" align="middle" width="500px"/>
   <!-- <figcaption align="middle">Supersample rate: 1 per pixel</figcaption> -->
 </div>
 
@@ -65,29 +65,29 @@
   This is because the samples in the gap that were chosen happened to fall outside the triangle, but the triangle does cross through those pixels.
   Supersampling fixes the gap with antialiasing, as a light red is rasterized instead of pure white. The sharp edges are overall blurred and smoothed.
 </p>
+<!-- <br><br><br><br><br><br><br> -->
 
 <!-- <p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p> -->
-
 <div align="middle">
-  <table style="width=100%">
+  <table style="width:100%">
     <tr>
       <td>
-        <img src="images/task2a.png" align="middle" width="400px"/>
+        <img src="images/task2a.png" align="middle" width="500px"/>
         <figcaption align="middle">Supersample rate: 1 per pixel</figcaption>
       </td>
       <td>
-        <img src="images/task2b.png" align="middle" width="400px"/>
+        <img src="images/task2b.png" align="middle" width="500px"/>
         <figcaption align="middle">Supersample rate: 4 per pixel</figcaption>
       </td>
     </tr>
     <br>
     <tr>
       <td>
-        <img src="images/task2c.png" align="middle" width="400px"/>
+        <img src="images/task2c.png" align="middle" width="500px"/>
         <figcaption align="middle">Supersample rate: 9 per pixel</figcaption>
       </td>
       <td>
-        <img src="images/task2d.png" align="middle" width="400px"/>
+        <img src="images/task2d.png" align="middle" width="500px"/>
         <figcaption align="middle">Supersample rate: 16 per pixel</figcaption>
       </td>
     </tr>
@@ -102,7 +102,7 @@
 </p>
 
 <div align="middle">
-  <table style="width=100%">
+  <table style="width:63.5%">
     <tr>
       <td>
         <img src="images/task3.png" align="middle" width="400px"/>
@@ -127,16 +127,17 @@
   A point is inside the simplex if and only if all coordinates are positive (inside or on the boundary if and only if all coordinates are nonnegative).
   Note that barycentric coordinates are unique if normalized, or defined up to multiplication by a nonzero constant.
 </p>
+<!-- <br><br><br> -->
 
 <div align="middle">
-  <table style="width=100%">
+  <table style="width:90%">
     <tr>
       <td>
-        <img src="images/task4a.png" align="middle" width="400px"/>
+        <img src="images/task4a.png" align="middle" width="450px"/>
         <figcaption align="middle">Interpolated triangle</figcaption>
       </td>
       <td>
-        <img src="images/task4b.png" align="middle" width="400px"/>
+        <img src="images/task4b.png" align="middle" width="450px"/>
         <figcaption align="middle">Color wheel</figcaption>
       </td>
     </tr>
@@ -163,30 +164,31 @@
 </p>
 
 <div align="middle">
-  <table style="width=100%">
+  <table style="width:90%">
     <tr>
       <td>
-        <img src="images/task5a.png" align="middle" width="400px"/>
+        <img src="images/task5a.png" align="middle" width="450px"/>
         <figcaption align="middle">Nearest sampling: 1 per pixel</figcaption>
       </td>
       <td>
-        <img src="images/task5b.png" align="middle" width="400px"/>
+        <img src="images/task5b.png" align="middle" width="450px"/>
         <figcaption align="middle">Bilinear sampling: 1 per pixel</figcaption>
       </td>
     </tr>
     <br>
     <tr>
       <td>
-        <img src="images/task5c.png" align="middle" width="400px"/>
+        <img src="images/task5c.png" align="middle" width="450px"/>
         <figcaption align="middle">Nearest sampling: 16 per pixel</figcaption>
       </td>
       <td>
-        <img src="images/task5d.png" align="middle" width="400px"/>
+        <img src="images/task5d.png" align="middle" width="450px"/>
         <figcaption align="middle">Bilinear sampling: 16 per pixel</figcaption>
       </td>
     </tr>
   </table>
 </div>
+<!-- <br><br><br><br> -->
 
 <h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
 
@@ -205,36 +207,37 @@
 </p>
 
 <div align="middle">
-  <table style="width=100%">
+  <!-- <table style="width:90%; margin-top:-30px"> -->
+  <table style="width:90%">
     <tr>
       <td>
-        <img src="images/task6a.png" align="middle" width="400px"/>
+        <img src="images/task6a.png" align="middle" width="450px"/>
         <figcaption align="middle">Zeroth level & Nearest sampling</figcaption>
       </td>
       <td>
-        <img src="images/task6b.png" align="middle" width="400px"/>
+        <img src="images/task6b.png" align="middle" width="450px"/>
         <figcaption align="middle">Zeroth level & Bilinear sampling</figcaption>
       </td>
     </tr>
     <br>
     <tr>
       <td>
-        <img src="images/task6c.png" align="middle" width="400px"/>
+        <img src="images/task6c.png" align="middle" width="450px"/>
         <figcaption align="middle">Nearest level & Nearest sampling</figcaption>
       </td>
       <td>
-        <img src="images/task6d.png" align="middle" width="400px"/>
+        <img src="images/task6d.png" align="middle" width="450px"/>
         <figcaption align="middle">Nearest level & Bilinear sampling</figcaption>
       </td>
     </tr>
     <br>
     <tr>
       <td>
-        <img src="images/task6c.png" align="middle" width="400px"/>
+        <img src="images/task6c.png" align="middle" width="450px"/>
         <figcaption align="middle">Bilinear level & Nearest sampling</figcaption>
       </td>
       <td>
-        <img src="images/task6d.png" align="middle" width="400px"/>
+        <img src="images/task6d.png" align="middle" width="450px"/>
         <figcaption align="middle">Bilinear level & Bilinear sampling</figcaption>
       </td>
     </tr>
