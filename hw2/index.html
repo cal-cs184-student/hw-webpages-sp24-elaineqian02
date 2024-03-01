@@ -1,7 +1,660 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Homework 2 index.html here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    background-color: white;
+    padding: 100px;
+    width: 1050px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+  kbd {
+    color: #121212;
+  }
+</style>
+<title>CS 184 Mesh Edit</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    }
+  };
+</script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2024</h1>
+<h1 align="middle">Project 2: Mesh Edit</h1>
+<h2 align="middle">Elaine Qian</h2>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>
+  This project explored geometric modeling! I learned how to create smooth Bezier curves and surfaces using de Casteljau's algorithm.
+  I also implemented various methods for manipulating triangle meshes, including upsampling with loop subdivision, edge flips and splits, and Phong shading with area-weighted vertex normals.
+  I enjoyed experimenting with geometric meshes to build cool models and render fun patterns.
+</p>
+<br>
+
+
+<h2 align="middle">Section I: Bezier Curves and Surfaces</h2>
+
+<h3 align="middle">Part 1: Bezier Curves with 1D de Casteljau Subdivision</h3>
+
+
+<b>
+  Briefly explain de Casteljau's algorithm and how you implemented it in order to evaluate Bezier curves.
+</b>
+<p>
+  De Casteljau's algorithm is a recursive algorithm for evaluating Bezier curves, given the control points (level 0) and a parameter \(t\) in the range [0, 1].
+  At each level, we linearly interpolate between each pair of adjacent points from the previous level, producing a new set with one fewer point.
+  This process is repeated until we are left with only one point, which lies on the Bezier curve defined by the control points.
+  By varying \(t\) from 0 (corresponding to the leftmost control point) to 1 (the rightmost), we can trace the complete Bezier curve.
+</p>
+<br>
+
+<!-- Example of including a single figure -->
+<!-- <div align="middle">
+  <img src="images/your_file.png" align="middle" width="50%">
+</div>
+<br> -->
+
+<b>
+  Take a look at the provided .bzc files and create your own Bezier curve with 6 control points of your choosing. Use this Bezier curve for your screenshots below.
+  Show screenshots of each step / level of the evaluation from the original control points down to the final evaluated point. Press <kbd>E</kbd> to step through. Toggle <kbd>C</kbd> to show the completed Bezier curve as well.
+</b>
+<!-- Example of including multiple figures -->
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/part1a1.png" align="middle" width="350px"/>
+        <figcaption>Level 0</figcaption>
+      </td>
+      <td>
+        <img src="images/part1a2.png" align="middle" width="350px"/>
+        <figcaption>Level 1</figcaption>
+      </td>
+      <td>
+        <img src="images/part1a3.png" align="middle" width="350px"/>
+        <figcaption>Level 2</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr align="center">
+      <td>
+        <img src="images/part1a4.png" align="middle" width="350px"/>
+        <figcaption>Level 3</figcaption>
+      </td>
+      <td>
+        <img src="images/part1a5.png" align="middle" width="350px"/>
+        <figcaption>Level 4</figcaption>
+      </td>
+      <td>
+        <img src="images/part1a6.png" align="middle" width="350px"/>
+        <figcaption>Level 5</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+<br><br><br><br><br><br><br><br><br>
+
+
+<b>
+  Show a screenshot of a slightly different Bezier curve by moving the original control points around and modifying the parameter \(t\) via mouse scrolling.
+</b>
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/part1b1.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part1b2.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part1b3.png" align="middle" width="350px"/>
+      </td>
+    </tr>
+    <br>
+    <tr align="center">
+      <td>
+        <img src="images/part1b4.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part1b5.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part1b6.png" align="middle" width="350px"/>
+      </td>
+    </tr>
+  </table>
+</div>
+<br>
+
+
+<h3 align="middle">Part 2: Bezier Surfaces with Separable 1D de Casteljau</h3>
+<b>
+  Briefly explain how de Casteljau algorithm extends to Bezier surfaces and how you implemented it in order to evaluate Bezier surfaces.
+</b>
+<p>
+  De Casteljau's algorithm can be easily extended to Bezier surfaces (and higher dimensions), given a grid of control points and two parameters \(u\) and \(v\), both in the range [0, 1].
+  To compute a point on the surface, we interpolate in two (typically orthogonal) directions.
+  We first repeat the 1D algorithm from above with parameter \(u\) on each row of the control points, then one final time with parameter \(v\) on the resulting set of points.
+  By separately varying \(u\) and \(v\) from 0 to 1, we can evaluate the complete Bezier surface.
+</p>
+<br>
+
+
+<b>
+  Show a screenshot of bez/teapot.bez (not .dae) evaluated by your implementation.
+</b>
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/part2a1.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part2a2.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part2a3.png" align="middle" width="350px"/>
+      </td>
+    </tr>
+    <tr align="center">
+      <td></td>
+      <td>
+        teapot.bez
+      </td>
+    </tr>
+    <br>
+    <tr align="center">
+      <td>
+        <img src="images/part2b1.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part2b2.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part2b3.png" align="middle" width="350px"/>
+      </td>
+    </tr>
+    <tr align="center">
+      <td></td>
+      <td>
+        wavy_cube.bez
+      </td>
+    </tr>
+  </table>
+</div>
+<br><br><br><br><br><br>
+
+
+<h2 align="middle">Section II: Triangle Meshes and Half-Edge Data Structure</h2>
+
+<h3 align="middle">Part 3: Area-Weighted Vertex Normals</h3>
+
+<b>
+  Briefly explain how you implemented the area-weighted vertex normals.
+</b>
+<p>
+  Computing area-weighted vertex normals, as its name suggests, involved calculating a weighted average of the normals of neighboring triangles.
+  I iterated through the non-boundary faces incident to the vertex, summed over all areas, and normalized the result.
+  For each face, I subtracted the shared vertex from the other two vertices for two sides of the triangle, and took half their cross product.
+</p>
+<br>
+
+
+<b>
+  Show screenshots of dae/teapot.dae (not .bez) comparing teapot shading with and without vertex normals. Use <kbd>Q</kbd> to toggle default flat shading and Phong shading.
+</b>
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/part3a1.png" align="middle" width="350px"/>
+        <figcaption>teapot.dae (flat shading)</figcaption>
+      </td>
+      <td>
+        <img src="images/part3b1.png" align="middle" width="350px"/>
+        <figcaption>cow.dae (flat shading)</figcaption>
+      </td>
+      <td>
+        <img src="images/part3c1.png" align="middle" width="350px"/>
+        <figcaption>bean.dae (flat shading)</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr align="center">
+      <td>
+        <img src="images/part3a2.png" align="middle" width="350px"/>
+        <figcaption>teapot.dae (Phong shading)</figcaption>
+      </td>
+      <td>
+        <img src="images/part3b2.png" align="middle" width="350px"/>
+        <figcaption>cow.dae (Phong shading)</figcaption>
+      </td>
+      <td>
+        <img src="images/part3c2.png" align="middle" width="350px"/>
+        <figcaption>bean.dae (Phong shading)</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+<br>
+
+
+<h3 align="middle">Part 4: Edge Flip</h3>
+<b>
+  Briefly explain how you implemented the edge flip operation and describe any interesting implementation / debugging tricks you have used.
+</b>
+<p>
+  Implementing edge flips required finding all relevant mesh elements and reassigning their pointers into the flipped orientation.
+  These components consisted of the half-edges, edges, vertices, and faces belonging to the enclosing polygon the edge is contained in.
+</p>
+<br>
+
+
+<b>
+  Show screenshots of a mesh before and after some edge flips.
+</b>
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/part4a1.png" align="middle" width="500px"/>
+      </td>
+      <td>
+        <img src="images/part4a2.png" align="middle" width="500"/>
+      </td>
+    </tr>
+    <br>
+    <tr align="center">
+      <td>
+        <img src="images/part4a3.png" align="middle" width="500"/>
+      </td>
+      <td>
+        <img src="images/part4a4.png" align="middle" width="500"/>
+      </td>
+    </tr>
+  </table>
+</div>
+<br>
+
+
+<b>
+  Write about your eventful debugging journey, if you have experienced one.
+</b>
+<p>
+  Debugging was primarily just <s>double-checking</s> triple-checking the pointers, referring to the diagram I drew.
+</p>
+<br>
+
+
+<h3 align="middle">Part 5: Edge Split</h3>
+<b>
+  Briefly explain how you implemented the edge split operation and describe any interesting implementation / debugging tricks you have used.
+</b>
+<p>
+  Implementing edge splits followed a similar process as edge flips in reassigning pointers of mesh elements, but at a more complex scale.
+  The main difference was that it required creating and managing the new elements from the split: six half-edges, three edges, two faces, and one vertex.
+</p>
+<br>
+
+
+<b>
+  Show screenshots of a mesh before and after some edge splits.
+</b>
+<div align="middle">
+  <table style="width:100%">
+    <br>
+    <tr align="center">
+      <td>
+        <img src="images/part5a1.png" align="middle" width="500px"/>
+      </td>
+      <td>
+        <img src="images/part5a3.png" align="middle" width="500"/>
+      </td>
+    </tr>
+  </table>
+</div>
+<br>
+
+
+<b>
+  Show screenshots of a mesh before and after a combination of both edge splits and edge flips.
+</b>
+<div align="middle">
+  <table style="width:100%">
+    <br>
+    <tr align="center">
+      <td>
+        <img src="images/part5a2.png" align="middle" width="500"/>
+      </td>
+      <td>
+        <img src="images/part5a4.png" align="middle" width="500"/>
+      </td>
+    </tr>
+  </table>
+</div>
+<br>
+
+
+<b>
+  Write about your eventful debugging journey, if you have experienced one.
+</b>
+<p>
+  Debugging turned into <s>triple-checking</s> quadruple-checking the pointers with my diagram and frustration >:(
+</p>
+<br>
+
+
+<!-- <b>
+  If you have implemented support for boundary edges, show screenshots of your implementation properly handling split operations on boundary edges.
+</b>
+<p>
+  YOUR RESPONSE GOES HERE
+</p>
+<br> -->
+
+
+<h3 align="middle">Part 6: Loop Subdivision for Mesh Upsampling</h3>
+<b>
+  Briefly explain how you implemented the loop subdivision and describe any interesting implementation / debugging tricks you have used.
+</b>
+<p>
+  I followed the approach detailed in the spec for loop subdivision to divide each face into four triangles.
+  I first calculated the new positions for current vertices and new vertices with the subdivision rules based on weighted positions of neighboring vertices.
+  I then split every current edge (connecting current vertices) and flipped every new edge connecting an old vertex with a new vertex.
+  Finally, I set the positions of all vertices to their updated positions computed in the first step.
+</p>
+<br>
+
+
+<b>
+  Take some notes, as well as some screenshots, of your observations on how meshes behave after loop subdivision. What happens to sharp corners and edges? Can you reduce this effect by pre-splitting some edges?
+</b>
+<p>
+  Meshes become smoother and more even with repeated loop subdivision. The sharp corners and edges seen in the original meshes below lose definition.
+  For instance, the icosahedron approaches a sphere and the jagged torus approaches a ring.
+  This effect is especially pronounced because both meshes are already similar to their limit shapes, but pre-processing (such as edge collapses) can help somewhat.
+  It is possible to try to keep sharp corners and edges with additional techniques like crease preservation and controlling crease weights.
+</p>
+
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/part6a1.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6a2.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6a3.png" align="middle" width="350px"/>
+      </td>
+    </tr>
+    <br>
+    <tr align="center">
+      <td>
+        <img src="images/part6a4.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6a5.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6a6.png" align="middle" width="350px"/>
+      </td>
+    </tr>
+    <tr align="center">
+      <td></td>
+      <td>
+        icosahedron/input.dae
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/part6b1.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6b2.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6b3.png" align="middle" width="350px"/>
+      </td>
+    </tr>
+    <br>
+    <tr align="center">
+      <td>
+        <img src="images/part6b4.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6b5.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6b6.png" align="middle" width="350px"/>
+      </td>
+    </tr>
+    <tr align="center">
+      <td></td>
+      <td>
+        icosahedron/edgeCollapse.dae
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/part6c1.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6c2.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6c3.png" align="middle" width="350px"/>
+      </td>
+    </tr>
+    <br>
+    <tr align="center">
+      <td>
+        <img src="images/part6c4.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6c5.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6c6.png" align="middle" width="350px"/>
+      </td>
+    </tr>
+    <tr align="center">
+      <td></td>
+      <td>
+        torus/input.dae
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/part6d1.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6d2.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6d3.png" align="middle" width="350px"/>
+      </td>
+    </tr>
+    <br>
+    <tr align="center">
+      <td>
+        <img src="images/part6d4.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6d5.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6d6.png" align="middle" width="350px"/>
+      </td>
+    </tr>
+    <tr align="center">
+      <td></td>
+      <td>
+        torus/edgeCollapse.dae
+      </td>
+    </tr>
+  </table>
+</div>
+<br>
+
+
+<b>
+  Load dae/cube.dae. Perform several iterations of loop subdivision on the cube. Notice that the cube becomes slightly asymmetric after repeated subdivisions. Can you pre-process the cube with edge flips and splits so that the cube subdivides symmetrically? Document these effects and explain why they occur. Also explain how your pre-processing helps alleviate the effects.
+</b>
+<p>
+  The cube becomes asymmetrical after a few iterations of loop subdivision because the input mesh is uneven. Each side of the cube is only split once along a diagonal edge into two faces.
+  As loop subdivision divides mesh faces into four smaller triangles (notice the diagonal lines on the first subdivision), the cube gets slightly warped along the starting edge directions.<br><br>
+  To fix this issue, I pre-processed the cube by splitting each original diagonal edge to form new edges along the opposite diagonal, making all six sides identical.
+  The sides of the cube are now split into four symmetrical triangles, which remain evenly split in further iterations (and form pretty geometric patterns!).
+</p>
+
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/part6e1.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6e2.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6e3.png" align="middle" width="350px"/>
+      </td>
+    </tr>
+    <br>
+    <tr align="center">
+      <td>
+        <img src="images/part6e4.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6e5.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6e6.png" align="middle" width="350px"/>
+      </td>
+    </tr>
+    <tr align="center">
+      <td></td>
+      <td>
+        cube.dae (original)
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/part6f1.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6f2.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6f3.png" align="middle" width="350px"/>
+      </td>
+    </tr>
+    <br>
+    <tr align="center">
+      <td>
+        <img src="images/part6f4.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6f5.png" align="middle" width="350px"/>
+      </td>
+      <td>
+        <img src="images/part6f6.png" align="middle" width="350px"/>
+      </td>
+    </tr>
+    <tr align="center">
+      <td></td>
+      <td>
+        cube.dae (pre-processed)
+      </td>
+    </tr>
+  </table>
+</div>
+<br>
+
+
+<!-- <b>
+  If you have implemented any extra credit extensions, explain what you did and document how they work with screenshots.
+</b>
+<p>
+  YOUR RESPONSE GOES HERE
+</p>
+<br> -->
+
+
+<!-- <h3 align="middle">Part 7 (Optional, Possible Extra Credit)</h3>
+<b>
+  Save your best polygon mesh as partsevenmodel.dae in your docs folder and show us a screenshot of the mesh in your write-up.
+</b>
+<p>
+  YOUR RESPONSE GOES HERE
+</p>
+<br> -->
+
+
+<!-- <b>
+  Include a series of screenshots showing your original mesh and your mesh after one and two rounds of subdivision. If you have used custom shaders, include screenshots of your mesh with those shaders applied as well.
+</b>
+<p>
+  YOUR RESPONSE GOES HERE
+</p>
+<br> -->
+
+
+<!-- <b>
+  Describe what you have done to enhance your mesh beyond the simple humanoid mesh described in the tutorial.
+</b>
+<p>
+  YOUR RESPONSE GOES HERE
+</p>
+<br> -->
+
+
+</body>
 </html>
