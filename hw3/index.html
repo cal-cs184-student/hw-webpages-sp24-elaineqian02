@@ -36,7 +36,6 @@
 
 </head>
 
-
 <body>
 
 <h1 align="middle">CS 184/284A: Computer Graphics and Imaging, Spring 2024</h1>
@@ -47,7 +46,6 @@
 <!-- <h2 align="middle">Website URL: <a href="TODO">TODO</a></h2> -->
 
 <br><br>
-
 
 <!-- <div align="center">
   <table style="width=100%">
@@ -63,7 +61,6 @@
 <o>The website writeup is intended to be a self-contained walkthrough of the assignment: we want this to be a piece of work which showcases your understanding of relevant concepts through both mesh images as well as written explanations about what you did to complete each part of the assignment. Try to be as clear and organized as possible when writing about your own output files or extensions to the assignment. We want to understand what you've achieved and how you've done it!</p>
 <p>If you are well-versed in web development, feel free to ditch this template and make a better looking page.</p>
 
-
 <p>Here are a few problems students have encountered in the past. Test your website on the instructional machines early!</p>
 <ul>
 <li>Your main report page should be called index.html.</li>
@@ -74,7 +71,6 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
 <li>Be sure to adjust the permissions on your files so that they are world readable. For more information on this please see this tutorial: <a href="http://www.grymoire.com/Unix/Permissions.html">http://www.grymoire.com/Unix/Permissions.html</a></li>
 <li>And again, test your website on the instructional machines early!</li>
 </ul>
-
 
 <p>Here is an example of how to include a simple formula:</p>
 <p align="middle"><pre align="middle">a^2 + b^2 = c^2</pre></p>
@@ -102,7 +98,16 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
   calculating the coordinates of the bottom-left and top-right corners based on the horizontal and vertical field of view (<i>hFov</i> and <i>vFov</i>).
   It then linearly interpolates between these corners based on the given coordinates (x, y) to determine the position in camera space.
   The position is transformed to world space using the camera-to-world matrix <i>c2w</i> and normalized to obtain the ray direction.
-  The min_t and max_t values of the ray are set to <i>nClip</i> and <i>fClip</i>, respectively, which represent the near and far clipping distances.
+  The <i>min_t</i> and <i>max_t</i> values of the ray are set to <i>nClip</i> and <i>fClip</i>, respectively, which represent the near and far clipping distances.
+  <br><br>
+  The next step is to generate pixel samples to estimate the integral of radiance over pixels, averaging <i>ns_aa</i> samples.
+  If the number of samples is 1, then it simply takes the center of the pixel as the coordinate. Otherwise, it samples uniformly over a unit square using <i>gridSampler</i>.
+  Rays are generated using the averaged sampled coordinates normalized by the width and height of <i>sampleBuffer</i>.
+  <br><br>
+  This project involved implementing ray intersections with two types of primitives: triangles and spheres.
+  For both types, when an intersection with a ray is detected, the <i>isect</i> structure is populated with the <i>t</i>-value of the input ray,
+  the surface normal at the intersection, the primitive that was intersected, and the BSDF (surface material representation for reflecting and transmitting light) at the hit point.
+  Ray-sphere intersection is computed by substituting the ray equation into the sphere equation and solving the quadratic equation for <i>t</i>.
 </p>
 <br>
 
@@ -110,7 +115,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
   Explain the triangle intersection algorithm you implemented in your own words.
 </h3>
 <p>
-  The algorithm checks if the ray intersects the triangle by first solving the ray-plane intersection equation for the plane the triangle lies on.
+  Ray-triangle intersections is implemented by first solving the ray-plane intersection equation for the plane the triangle lies on.
   It then computes the barycentric coordinates of the intersection point, which represent its position relative to the triangle's vertices.
   It verifies whether these coordinates fall within the triangle's boundaries (if all coordinates are between 0 and 1 after normalization).
   It also ensures the intersection point lies within the valid range of possible intersection times along the ray, determined by <i>r.min_t</i> and <i>r.max_t</i>.
@@ -147,7 +152,6 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
 </div>
 <br>
 
-
 <h2 align="middle">Part 2: Bounding Volume Hierarchy (20 Points)</h2>
 
 <h3>
@@ -156,11 +160,14 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
 <p>
   The algorithm constructs a BVH by partitioning a set of primitives into two smaller groups and recursively constructing child BVH nodes.
   It starts by computing the encompassing bounding box for all the node's primitives and the average centroid of these bounding boxes.
-  If the number of primitives is below the <i>max_leaf_size</i> threshold, it creates a leaf node with start and end pointers to these primitives.
-  Otherwise, it splits the primitives into left and right groups based on the average centroid position, choosing the split axis with the maximum extent.
+  If the number of primitives is below the <i>max_leaf_size</i> threshold, it creates a leaf node, setting the appropriate <i>start</i> and <i>end</i> iterators.
+  <br><br>
+  Otherwise, it splits the primitives into left and right groups based on the average centroid position heuristic, choosing the split axis with the maximum extent.
+  The splitting point is the <i>x</i>, <i>y</i>, or <i>z</i> coordinate of the average centroid, and each primitive's bounding box's corresponding centroid coordinate is compared.
   If either child node would have an empty set of primitives, one of the other child's primitives is transferred to prevent infinite recursion.
-  This process repeats until all primitives are organized into the hierarchical tree structure.
+  The <i>left</i> and <i>right</i> child pointers of the parent are set to the sub-BVHs, repeating until all primitives are organized into the hierarchical tree structure.
 </p>
+<br>
 
 <h3>
   Show images with normal shading for a few large .dae files that you can only render with BVH acceleration.
@@ -228,6 +235,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     </tr>
   </table>
 </div>
+<br>
 <div align="middle">
   <table style="width:100%">
     <tr align="center">
@@ -270,13 +278,14 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     </tr>
   </table>
 </div>
-<br>
 <p>
-  BVH acceleration dramatically reduces rendering times. As shown in the table above, the speedup in my timing experiments were in the hundreds to thousands range.
+  BVH acceleration dramatically reduces rendering times, taking ray intersection complexity from <i>O(n)</i> to <i>O(log(n))</i>.
+  As shown in the table above, the speedup in my timing experiments were in the hundreds to thousands range.
   With the bounding volume hierarchy tree structure, even complex geometries like <i>sky/wall-e.dae</i> and <i>sky/CBlucy.dae</i> can be rendered in less than one second.
   The effects of the speedup are more distinct when the input file is larger, as the smallest files still rendered in acceptable time with the naive solution.
 </p>
 <br>
+<!-- <br><br><br><br><br> -->
 
 <h2 align="middle">Part 3: Direct Illumination (20 Points)</h2>
 
@@ -298,6 +307,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
   Each sample retrieves the incident direction (converted to the object space with the world-to-object matrix <i>w2o</i>), distance to the light, and probability density function value.
   If the light is in front of the surface and a "shadow" ray cast from the hit point does not intersect any other object in front of the light, the radiance is normalized by the pdf and added to the lighting estimate.
 </p>
+<br>
 
 <h3>
   Show some images rendered with both implementations of the direct lighting function.
@@ -315,7 +325,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     </tr>
     <tr align="center">
       <td>
-        <img src="images/3/CBspheresH_64_1.png" align="middle" width="400px"/>
+        <img src="images/3/CBspheres_H_64_1.png" align="middle" width="400px"/>
         <figcaption>CBspheres: s=64, l=1</figcaption>
       </td>
       <td>
@@ -325,7 +335,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     </tr>
     <tr align="center">
       <td>
-        <img src="images/3/CBspheresH_64_4.png" align="middle" width="400px"/>
+        <img src="images/3/CBspheres_H_64_4.png" align="middle" width="400px"/>
         <figcaption>CBspheres: s=64, l=4</figcaption>
       </td>
       <td>
@@ -335,7 +345,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     </tr>
     <tr align="center">
       <td>
-        <img src="images/3/CBspheresH_64_16.png" align="middle" width="400px"/>
+        <img src="images/3/CBspheres_H_64_16.png" align="middle" width="400px"/>
         <figcaption>CBspheres: s=64, l=16</figcaption>
       </td>
       <td>
@@ -345,7 +355,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     </tr>
     <tr align="center">
       <td>
-        <img src="images/3/CBspheresH_64_64.png" align="middle" width="400px"/>
+        <img src="images/3/CBspheres_H_64_64.png" align="middle" width="400px"/>
         <figcaption>CBspheres: s=64, l=64</figcaption>
       </td>
       <td>
@@ -386,7 +396,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
   </table>
 </div>
 <p>
-  The noise level significantly decreases as the number of light rays increases. The images are very grainy with dotted specks in the soft shadows when the light ray samples are low.
+  The noise level significantly decreases as the number of light rays increases. The images are very grainy with dotted specks in the soft shadows (and all over the image) when the number of samples per light ray is low.
   These soft shadows become more evenly blended and blurred when the light ray samples are high, producing more realistic shadows.
 </p>
 <br>
@@ -401,7 +411,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
   However, even when it is high, lighting sampling still produces sharper and smoother images (eg. the edges of the light on the ceiling of the box and the blending on the spheres).
 </p>
 <br>
-
+<!-- <br><br><br> -->
 
 <h2 align="middle">Part 4: Global Illumination (20 Points)</h2>
 
@@ -415,8 +425,9 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
   then multiples it with the BSDF and normalizes. The added lighting from each bounce is acculumated throughout the recursion.
   <br><br>
   When Russian roulette is enabled, this process is unbiased and randomly terminates with a specified probability (eg. 0.3) at each iteration. Otherwise, it terminates when <i>max_ray_depth</i> is reached.
-  However, even with Russian roulette, global illumination will always iterate and trace at least one indirect bounce.
-  If <i>isAccumBounces</i> is true, then all the bounces are summed up. If it is false, only the highest bounce radiance is returned.
+  However, even with Russian roulette, global illumination will always iterate once at the start, tracing at least one indirect bounce.
+  If <i>isAccumBounces</i> is true, then all the bounces are summed up. If it is false, only the highest (level <i>max_ray_depth</i>) bounce radiance is returned.
+</p>
 <br>
 
 <h3>
@@ -426,21 +437,21 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
   <table style="width:100%">
     <tr align="center">
       <td>
-        <img src="images/4/CBbunny_1024_4.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: s=1024, l=4</figcaption>
+        <img src="images/4/CBbunny_1024_16.png" align="middle" width="400px"/>
+        <figcaption>CBbunny: s=1024, l=16, m=5</figcaption>
       </td>
       <td>
-        <img src="images/4/CBspheres_1024_4.png" align="middle" width="400px"/>
-        <figcaption>CBspheres: s=1024, l=4</figcaption>
+        <img src="images/4/CBspheres_1024_16.png" align="middle" width="400px"/>
+        <figcaption>CBspheres: s=1024, l=16, m=5</figcaption>
       </td>
       <tr align="center">
         <td>
-          <img src="images/4/dragon_1024_4.png" align="middle" width="400px"/>
-          <figcaption>dragon: s=64; l=4</figcaption>
+          <img src="images/4/dragon_1024_16.png" align="middle" width="400px"/>
+          <figcaption>dragon: s=1024, l=16, m=5</figcaption>
         </td>
         <td>
-          <img src="images/4/bunny_1024_4.png" align="middle" width="400px"/>
-          <figcaption>bunny: s=64; l=4</figcaption>
+          <img src="images/4/bunny_1024_16.png" align="middle" width="400px"/>
+          <figcaption>bunny: s=1024, l=16, m=5</figcaption>
         </td>
       </tr>
     </tr>
@@ -464,22 +475,42 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     </tr>
     <tr align="center">
       <td>
-        <img src="images/4/CBbunny_dir_1024_4.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: s=1024, l=4</figcaption>
+        <img src="images/4/CBbunny_dir_1024_16.png" align="middle" width="400px"/>
+        <figcaption>CBbunny: s=1024, l=16</figcaption>
       </td>
       <td>
-        <img src="images/4/CBbunny_ind_1024_4.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: s=1024, l=4</figcaption>
+        <img src="images/4/CBbunny_ind_1024_16.png" align="middle" width="400px"/>
+        <figcaption>CBbunny: s=1024, l=16</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
-        <img src="images/4/CBspheres_dir_1024_4.png" align="middle" width="400px"/>
-        <figcaption>CBspheres: s=1024, l=4</figcaption>
+        <img src="images/4/CBspheres_dir_1024_16.png" align="middle" width="400px"/>
+        <figcaption>CBspheres: s=1024, l=16</figcaption>
       </td>
       <td>
-        <img src="images/4/CBspheres_ind_1024_4.png" align="middle" width="400px"/>
-        <figcaption>CBspheres: s=1024, l=4</figcaption>
+        <img src="images/4/CBspheres_ind_1024_16.png" align="middle" width="400px"/>
+        <figcaption>CBspheres: s=1024, l=16</figcaption>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <img src="images/4/dragon_dir_1024_16.png" align="middle" width="400px"/>
+        <figcaption>dragon: s=1024, l=16</figcaption>
+      </td>
+      <td>
+        <img src="images/4/dragon_ind_1024_16.png" align="middle" width="400px"/>
+        <figcaption>dragon: s=1024, l=16</figcaption>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <img src="images/4/bunny_dir_1024_16.png" align="middle" width="400px"/>
+        <figcaption>bunny: s=1024, l=16</figcaption>
+      </td>
+      <td>
+        <img src="images/4/bunny_ind_1024_16.png" align="middle" width="400px"/>
+        <figcaption>bunny: s=1024, l=16</figcaption>
       </td>
     </tr>
   </table>
@@ -494,41 +525,40 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     <tr align="center">
       <td>
         <img src="images/4/CBbunny0a.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=0, isAccumBounces=false</figcaption>
+        <figcaption>CBbunny: m=0, l=16, isAccumBounces=false</figcaption>
       </td>
       <td>
         <img src="images/4/CBbunny1a.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=1, isAccumBounces=false</figcaption>
+        <figcaption>CBbunny: m=1, l=16, isAccumBounces=false</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
         <img src="images/4/CBbunny2a.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=2, isAccumBounces=false</figcaption>
+        <figcaption>CBbunny: m=2, l=16, isAccumBounces=false</figcaption>
       </td>
       <td>
         <img src="images/4/CBbunny3a.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=3, isAccumBounces=false</figcaption>
+        <figcaption>CBbunny: m=3, l=16, isAccumBounces=false</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
         <img src="images/4/CBbunny4a.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=4, isAccumBounces=false</figcaption>
+        <figcaption>CBbunny: m=4, l=16, isAccumBounces=false</figcaption>
       </td>
       <td>
         <img src="images/4/CBbunny5a.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=5, isAccumBounces=false</figcaption>
+        <figcaption>CBbunny: m=5, l=16, isAccumBounces=false</figcaption>
       </td>
     </tr>
   </table>
 </div>
-<br>
 <p>
   The second bounce of light fixes most of the problems from only including direct lighting and improves image quality the most.
   It adds softer gray shadows to the scene to counter the harsh black shadows originally on the bottom of the bunny and the ceiling of the box.
-  One noticeable difference compared to the third bounce is that significantly more light is added to the bottom of the bunny versus the top;
-  whereas the amount of light added on the third bounce, other than being overall dimmer, is relatively even throughout the bunny.
+  One noticeable difference compared to the third bounce is that significantly more light is added to the bottom of the bunny versus the top.
+  In contrast, the amount of light added on the third bounce, other than being overall dimmer, is relatively even and matte across the bunny.
 </p>
 <br>
 
@@ -540,31 +570,31 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     <tr align="center">
       <td>
         <img src="images/4/CBbunny0.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=0, isAccumBounces=true</figcaption>
+        <figcaption>CBbunny: m=0, l=16, isAccumBounces=true</figcaption>
       </td>
       <td>
         <img src="images/4/CBbunny1.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=1, isAccumBounces=true</figcaption>
+        <figcaption>CBbunny: m=1, l=16, isAccumBounces=true</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
         <img src="images/4/CBbunny2.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=2, isAccumBounces=true</figcaption>
+        <figcaption>CBbunny: m=2, l=16, isAccumBounces=true</figcaption>
       </td>
       <td>
         <img src="images/4/CBbunny3.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=3, isAccumBounces=true</figcaption>
+        <figcaption>CBbunny: m=3, l=16, isAccumBounces=true</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
         <img src="images/4/CBbunny4.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=4, isAccumBounces=true</figcaption>
+        <figcaption>CBbunny: m=4, l=16, isAccumBounces=true</figcaption>
       </td>
       <td>
         <img src="images/4/CBbunny5.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=5, isAccumBounces=true</figcaption>
+        <figcaption>CBbunny: m=5, l=16, isAccumBounces=true</figcaption>
       </td>
     </tr>
   </table>
@@ -579,36 +609,37 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     <tr align="center">
       <td>
         <img src="images/4/CBbunny_rr_0.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=0, l=16</figcaption>
+        <figcaption>CBbunny: s=1024, m=0, l=16</figcaption>
       </td>
       <td>
         <img src="images/4/CBbunny_rr_1.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=1, l=16</figcaption>
+        <figcaption>CBbunny: s=1024, m=1, l=16</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
         <img src="images/4/CBbunny_rr_2.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=2, l=16</figcaption>
+        <figcaption>CBbunny: s=1024, m=2, l=16</figcaption>
       </td>
       <td>
         <img src="images/4/CBbunny_rr_3.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=3, l=16</figcaption>
+        <figcaption>CBbunny: s=1024, m=3, l=16</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
         <img src="images/4/CBbunny_rr_4.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=4, l=16</figcaption>
+        <figcaption>CBbunny: s=1024, m=4, l=16</figcaption>
       </td>
       <td>
         <img src="images/4/CBbunny_rr_100.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: m=100, l=16</figcaption>
+        <figcaption>CBbunny: s=1024, m=100, l=16</figcaption>
       </td>
     </tr>
   </table>
 </div>
 <br>
+<!-- <br><br><br> -->
 
 <h3>
   Pick one scene and compare rendered views with various sample-per-pixel rates, including at least 1, 2, 4, 8, 16, 64, and 1024. Use 4 light rays.
@@ -618,47 +649,47 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     <tr align="center">
       <td>
         <img src="images/4/CBbunny_1_4.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: s=1, l=4</figcaption>
+        <figcaption>CBbunny: s=1, l=4, m=5</figcaption>
       </td>
       <td>
         <img src="images/4/CBbunny_2_4.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: s=2, l=4</figcaption>
+        <figcaption>CBbunny: s=2, l=4, m=5</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
         <img src="images/4/CBbunny_4_4.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: s=4, l=4</figcaption>
+        <figcaption>CBbunny: s=4, l=4, m=5</figcaption>
       </td>
       <td>
         <img src="images/4/CBbunny_8_4.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: s8, l=4</figcaption>
+        <figcaption>CBbunny: s=8, l=4, m=5</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
         <img src="images/4/CBbunny_16_4.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: s=16, l=4</figcaption>
+        <figcaption>CBbunny: s=16, l=4, m=5</figcaption>
       </td>
       <td>
         <img src="images/4/CBbunny_64_4.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: s=64, l=4</figcaption>
+        <figcaption>CBbunny: s=64, l=4, m=5</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
         <img src="images/4/CBbunny_512_4.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: 512, l=4</figcaption>
+        <figcaption>CBbunny: s=512, l=4, m=5</figcaption>
       </td>
       <td>
         <img src="images/4/CBbunny_1024_4.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: 1024, l=4</figcaption>
+        <figcaption>CBbunny: s=1024, l=4, m=5</figcaption>
       </td>
     </tr>
   </table>
 </div>
 <br>
-
+<!-- <br><br><br><br><br> -->
 
 <h2 align="middle">Part 5: Adaptive Sampling (20 Points)</h2>
 
@@ -673,6 +704,7 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
   The algorithm computes the mean and variance of the estimated illuminance using acculumated illuminance values and their squares over the sampled rays.
   It periodically checks for convergence after processing <i>samplesPerBatch</i> samples, calculating the 95% confidence interval for the average illuminance.
   It compares it with the specified <i>maxTolerance</i> tolerance and terminates the sampling loop if the confidence interval falls within the allowed tolerance, indicating convergence.
+  The <i>sampleCountBuffer</i> is also updated to visualize the actual sampling rate per pixel as a ratio to the maximum number of samples allowed.
 </p>
 <br>
 
@@ -694,47 +726,86 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
     <tr align="center">
       <td>
         <img src="images/5/CBbunny_2048.png" align="middle" width="400px"/>
-        <figcaption>CBbunny: s=2048, m=5</figcaption>
+        <figcaption>CBbunny: s=2048, l=1, m=5</figcaption>
       </td>
       <td>
         <img src="images/5/CBbunny_2048_rate.png" align="middle" width="400px"/>
-        <figcaption>CBbunny rate: s=2048, m=5</figcaption>
+        <figcaption>CBbunny rate: s=2048, l=1, m=5</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
         <img src="images/5/CBspheres_2048.png" align="middle" width="400px"/>
-        <figcaption>CBspheres: s=2048, m=5</figcaption>
+        <figcaption>CBspheres: s=2048, l=1, m=5</figcaption>
       </td>
       <td>
         <img src="images/5/CBspheres_2048_rate.png" align="middle" width="400px"/>
-        <figcaption>CBspheres rate: s=2048, m=5</figcaption>
+        <figcaption>CBspheres rate: s=2048, l=1, m=5</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
         <img src="images/5/dragon_2048.png" align="middle" width="400px"/>
-        <figcaption>dragon: s=2048, m=5</figcaption>
+        <figcaption>dragon: s=2048, l=1, m=5</figcaption>
       </td>
       <td>
         <img src="images/5/dragon_2048_rate.png" align="middle" width="400px"/>
-        <figcaption>dragon rate: s=2048, m=5</figcaption>
+        <figcaption>dragon rate: s=2048, l=1, m=5</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
         <img src="images/5/bunny_2048.png" align="middle" width="400px"/>
-        <figcaption>bunny: s=2048, m=5</figcaption>
+        <figcaption>bunny: s=2048, l=1, m=5</figcaption>
       </td>
       <td>
         <img src="images/5/bunny_2048_rate.png" align="middle" width="400px"/>
-        <figcaption>bunny rate: s=2048, m=5</figcaption>
+        <figcaption>bunny rate: s=2048, l=1, m=5</figcaption>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <img src="images/5/CBbunny_4096.png" align="middle" width="400px"/>
+        <figcaption>CBbunny: s=4096, l=1, m=5</figcaption>
+      </td>
+      <td>
+        <img src="images/5/CBbunny_4096_rate.png" align="middle" width="400px"/>
+        <figcaption>CBbunny rate: s=4096, l=1, m=5</figcaption>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <img src="images/5/CBspheres_4096.png" align="middle" width="400px"/>
+        <figcaption>CBspheres: s=4096, l=1, m=5</figcaption>
+      </td>
+      <td>
+        <img src="images/5/CBspheres_4096_rate.png" align="middle" width="400px"/>
+        <figcaption>CBspheres rate: s=4096, l=1, m=5</figcaption>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <img src="images/5/dragon_4096.png" align="middle" width="400px"/>
+        <figcaption>dragon: s=4096, l=1, m=5</figcaption>
+      </td>
+      <td>
+        <img src="images/5/dragon_4096_rate.png" align="middle" width="400px"/>
+        <figcaption>dragon rate: s=4096, l=1, m=5</figcaption>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <img src="images/5/bunny_4096.png" align="middle" width="400px"/>
+        <figcaption>bunny: s=4096, l=1, m=5</figcaption>
+      </td>
+      <td>
+        <img src="images/5/bunny_4096_rate.png" align="middle" width="400px"/>
+        <figcaption>bunny rate: s=4096, l=1, m=5</figcaption>
       </td>
     </tr>
   </table>
 </div>
 <br>
-
 
 </body>
 </html>
